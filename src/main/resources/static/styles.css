@@ -1,0 +1,253 @@
+.titulo{
+    text-align: center;
+    font-family: "Montserrat", serif;
+    font-style: bold;
+    font-weight: 800;
+}
+
+body{
+    display: flex;
+    flex-direction: column;
+    background-color: #88a6eb;
+    justify-content: center;
+}
+
+.mainContainer{
+    align-self: center;
+    flex-wrap: wrap;
+    width: 60%;
+    padding: 40px 40px;
+    background-color: #afc5f9;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    justify-content: center;
+    border-radius: 30px;
+    gap:30px;
+}
+
+.formContainer{
+    padding: 0px 30px;
+    padding-bottom: 30px;
+    background-color: #d0deff;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    justify-content: center;
+    border-radius: 20px;
+    box-shadow: 10px 10px 80px 0 rgba(62, 64, 64, 0.4);
+    gap:5px;
+}
+
+
+.formContainer img{
+    width: 30%;
+    height: 30%;
+    display: block;
+    border: black;
+    border-style: solid;
+    border-width: 2px;
+    border-radius: 20px;
+    box-shadow: 10px 10px 80px 0 rgba(62, 64, 64, 0.4);
+}
+
+.formContainer h1{
+    text-align: center;
+    font-family: "Montserrat", serif;
+    font-style: bold;
+    font-weight: 800;
+}
+
+.formContainer form {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    width: 80%;
+    align-items: center;
+}
+
+.formContainer label {
+    font-family: "Montserrat", serif;
+    font-size: 16px;
+    font-weight: 600;
+    text-align: left;
+    width: 100%;
+}
+
+.formContainer input {
+    width: 80%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    box-sizing: border-box;
+    font-size: 16px;
+    text-align: left;
+}
+
+.formContainer .boton {
+    width: 50%;
+    margin-top: 5px;
+}
+
+.boton {
+    background-color: #4e8cf6b3;
+    border: none;
+    color: white;
+    padding: 15px 12px;
+    text-align: center;
+    font-size: 12px;
+    cursor: pointer;
+    border-radius: 15px;
+    margin: auto; 
+    display: block;
+    gap: 5px;
+}
+
+.inputInfo{
+    width: 100%;
+    padding: 10px 10px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    box-sizing: border-box;
+}
+
+.tableContainer{
+    padding: 0px 30px;
+    padding-bottom: 30px;
+    background-color: #d0deff;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    justify-content: center;
+    border-radius: 20px;
+    box-shadow: 10px 10px 80px 0 rgba(62, 64, 64, 0.4);
+    gap:10px;
+}
+
+.tableContainer h1{
+    text-align: center;
+    font-family: "Montserrat", serif;
+    font-style: bold;
+    font-weight: 800;
+}
+
+.CrudTable {
+    width: 100%;
+    border-collapse: collapse;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 4px 4px 15px rgba(0, 0, 0, 0.2);
+    background-color: #ffffff;
+    text-align: center;
+    font-family: "Montserrat", serif;
+    font-style: bold;
+    font-weight: 400;
+}
+
+.CrudTable th, .CrudTable td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #dddddd;
+}
+
+.CrudTable th {
+    background-color: #afc5f9;
+    font-weight: bold;
+    font-size: 16px;
+    text-align: center;
+}
+
+.CrudTable td {
+    font-size: 14px;
+    color: #333333;
+}
+
+.CrudTable tr:hover {
+    background-color: #f1f1f1;
+}
+
+.container{
+    padding: 0px 30px;
+    padding-bottom: 30px;
+    background-color: #d0deff;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    justify-content: center;
+    border-radius: 20px;
+    box-shadow: 10px 10px 80px 0 rgba(62, 64, 64, 0.4);
+    gap:5px;
+}
+
+.container h1{
+    text-align: center;
+    font-family: "Montserrat", serif;
+    font-style: bold;
+    font-weight: 800;
+}
+
+.container input{
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    box-sizing: border-box;
+    font-size: 16px;
+    text-align: left;
+}
+
+.loginUser{
+    text-align: left;
+    display:flex;
+    flex-direction: column;
+    font-family: "Montserrat", serif;
+    font-style: bold;
+    font-weight: 400;
+    padding: 10px 10px;
+}
+
+.loginPasswd{
+    text-align: left;
+    font-family: "Montserrat", serif;
+    font-style: bold;
+    font-weight: 400;
+    padding: 10px 10px;
+    display:flex;
+    flex-direction: column;
+}
+
+.loginButton {
+    width: 70%;
+    background-color: #4e8cf6b3;
+    border: none;
+    color: white;
+    padding: 15px 12px;
+    text-align: center;
+    font-size: 12px;
+    cursor: pointer;
+    border-radius: 15px;
+    margin: auto; 
+    display: block;
+    gap: 5px;
+}
+
+.container a{
+    text-align: center;
+    font-family: "Montserrat", serif;
+    font-style: bold;
+    font-weight: 400;
+}
+
+.container p{
+    text-align: center;
+    font-family: "Montserrat", serif;
+    font-style: bold;
+    font-weight: 400;
+}
+
+@media (min-width: 768px) {
+    .mainContainer {
+        display: flex;
+        flex-direction: row;
+        gap: 30px;
+    }
+}

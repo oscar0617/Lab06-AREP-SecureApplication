@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es" xml:lang="es">
+
+<head>
+    <title>CRUD System</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <h1 class="titulo">Real State CRUD</h1>
+    <div class="mainContainer">
+
+        <div class="formContainer">
+            <h1>Agregar propiedad y actualizar propiedad</h1>
+            <img src="https://github.com/oscar0617.png" alt="imagenGit" class="imagenGit">
+            <form id="property-form">
+                <label for="address">Dirección:</label>
+                <input type="text" id="address" placeholder="Dirección">
+            
+                <label for="price">Precio:</label>
+                <input type="number" id="price" placeholder="Precio">
+            
+                <label for="size">Tamaño (m2):</label>
+                <input type="text" id="size" placeholder="Tamaño">
+            
+                <label for="description">Descripción:</label>
+                <input type="text" id="description" placeholder="Descripción">
+            
+                <button type="submit" class="boton">Agregar</button>
+                <button class = "boton" type="button" id="update-btn" style="display: none;">Actualizar</button>
+            </form>
+            
+        </div>
+
+        <div class="tableContainer">
+            <h1>Propiedades</h1>
+            <table class="CrudTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Dirección</th>
+                        <th>Precio</th>
+                        <th>Tamaño (m2)</th>
+                        <th>Descripción</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="table-body">
+                </tbody>
+            </table>                                
+            <div class="responseJSON" id="getrespmsg"></div>
+        </div>
+
+        <script src="script.js"></script>
+    </div>
+</body>
+
+</html>
