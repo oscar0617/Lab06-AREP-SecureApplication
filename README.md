@@ -221,7 +221,7 @@ In a different EC2 instance:
     ```
 
 6. Deploy frontend files:
-    Copy your frontend files (HTML, CSS, JS) to `/var/www/html/`:
+    Copy your frontend files (HTML, CSS, JS) to `/var/www/html`
     ```
     sudo cp -r /path/to/your/frontend/* /var/www/html/
     ```
@@ -235,7 +235,11 @@ In a different EC2 instance:
   sudo certbot certonly --manual --preferred-challenges dns -d <DOMAIN>
   ```
   And renew the certificate.
-9. 
+
+9. Restart Apache:
+  ```
+    sudo systemctl restart httpd
+  ```
 
 
 #### Prerrequisites on the backend for AWS
@@ -254,10 +258,63 @@ spring.jpa.show-sql=true
 ```
 This code connects into the MySQL Instance to use it as database
 
+Also we need to establish the p12 key in the application properties (Be careful with the alias and password of the .p12 file):
+```
+server.ssl.key-store-type=PKCS12
+server.ssl.key-store=/home/ec2-user/keystore.p12
+server.ssl.key-store-password=123456
+server.ssl.key-alias=labarep6oscarl
+server.ssl.enabled=true
+```
+We are going to set up this later in the backend EC2 instance
+
 2. In `script.js` you need to change this line
 ```
-let IPADDRESS = " public ip address of the backend machine";
+let IPADDRESS = "domain of the backend";
 ```
+
+3. In the controllers `controller/` we have to set the CORS configuration to accept request from the frontend:
+```
+@CrossOrigin(origins = "https://domainFrontend", allowCredentials = "true")
+@RestController
+@RequestMapping("/v1/property")
+public class PropertyController 
+
+@CrossOrigin(origins = "https://domainFrontend", allowCredentials = "true")
+@RestController
+@RequestMapping("/users")
+public class UserController
+```
+
+4. Also we need to configure the security in `config/` (both files):
+```
+SecurityConfiguration.java
+@Bean
+    public CorsFilter corsFilter() {
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowCredentials(true);
+        config.setAllowedOrigins(Arrays.asList("https://domainFront"));
+        config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type")); 
+        source.registerCorsConfiguration("/**", config);
+        return new CorsFilter(source);
+    }
+```
+
+```
+WebConfiguration.java
+@Override
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/**")
+                .allowedOrigins("https://domainFront")
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                .allowedHeaders("*")
+                .allowCredentials(true);
+    }
+```
+
+NOTE: Be careful, if you put the IP addresses the app will not work due the certificate. Make sure to place the Domain with the valid certificate.
 
 With this steps you will be able to deploy the backend on AWS
 
@@ -275,14 +332,35 @@ sudo yum install java-17-amazon-corretto -y
 sudo yum install maven -y
 ```
 
-3. Transfer the JAR file to the EC2 instance using SFTP (keep in mind that you must to compile and package the jar file before this step in you local machine):
+3. Request a certificate for the backend:
+
+```
+sudo certbot certonly --standalone -d <BackEnd Domain>
+```
+
+4. Transform the certificate to a `.p12` file to make it compatible with springboot:
+```
+sudo openssl pkcs12 -export -in /etc/letsencrypt/live/<BACKEND DOMAIN>/fullchain.pem -inkey /etc/letsencrypt/live/<BACKEND DOMAIN>/privkey.pem -out /etc/letsencrypt/live/<BACKEND DOMAIN>/keystore.p12 -name <ALIAS> -password pass:123456 
+
+sudo ls -lah /etc/letsencrypt/live/<BACKEND DOMAIN>/ sudo mv /etc/letsencrypt/live/<BACKEND DOMAIN>/keystore.p12 /home/ec2-user/ sudo chmod 644 /home/ec2-user/keystore.p12
+```
+5. Move the `.p12` file to an accessible directory:
+```
+sudo mv /etc/letsencrypt/live/backendoscar.duckdns.org/keystore.p12 /home/ec2-user/
+
+sudo chmod 644 /home/ec2-user/keystore.p12
+
+```
+6. In the section described before in the application properties make changes if you need it.
+
+7. Transfer the JAR file to the EC2 instance using SFTP (keep in mind that you must to compile and package the jar file before this step in you local machine):
 ```
 sftp -i your-key.pem ec2-user@<backend-ec2-instance-ip>
 
 put target/arep-0.0.1-SNAPSHOT.jar
 ```
 
-4. Run the application using Spring-boot
+8. Run the application using Spring-boot
 ```
 java -jar arep-0.0.1-SNAPSHOT.jar
 ```
@@ -291,7 +369,7 @@ To access to the application don't forget to open the ports on the IAM of AWS, o
 
 Let's see the application running in AWS:
 
-![AWS](images/demo3.gif)
+![AWS](images/demo.gif)
 
 ## Architecture
 
@@ -299,61 +377,90 @@ Let's see the application running in AWS:
 
 #### Overview
 
-This architecture diagram illustrates the request flow in the **Real Estate CRUD System**. The system is divided into three main components:
+This architecture diagram illustrates the request flow in the **Real Estate CRUD System**. The system is divided into four main components:
 
 1. **Browser (Client)**
-2. **Backend (Spring Boot Application)**
-3. **Database (MySQL)**
+2. **Apache (Frontend Server)**
+3. **Backend (Spring Boot Application)**
+4. **Database (MySQL)**
 
-### Components and Workflow
+#### **Components and Workflow**
 
-#### **1. Browser (Client)**
-The user interacts with the system through a web browser, which:
-- Sends **HTTP requests** to the backend on **port 8080**.
+#### **Browser (Client)**
+The **user** interacts with the system through a **web browser**, which:
+- Sends **HTTP requests** to `frontDomain:80` (Apache Server).
 - Requests **static files** such as:
   - **HTML** (for page structure).
   - **JavaScript** (for dynamic interactions).
   - **CSS** (for styling).
-- Uses JavaScript to send API requests for **CRUD operations** on property listings.
+- Uses **JavaScript** to send API requests for **login validation** and **CRUD operations** on properties.
 
-#### **2. Backend (Spring Boot Application)**
-The backend is a **Spring Boot** application that:
-- Processes requests from the browser.
-- Manages property data through the **Property Management Service**.
+#### **Apache (Frontend Server)**
+The **Apache server** acts as the frontend layer, responsible for:
+- Serving **static web content** (HTML, CSS, JavaScript).
+- Handling **user requests** for page rendering.
+- Redirecting API requests (e.g., login validation, property management) to the backend.
+
+#### **Backend (Spring Boot Application)**
+The backend is a **Spring Boot application** that:
+- Processes **authentication and authorization**.
+- Manages **user accounts** via the `UserManagement` module.
+- Manages **property listings** via the `PropertyManagement` module.
 - Exposes **RESTful API endpoints** for CRUD operations.
-- Communicates with the **MySQL database** to retrieve and store property information.
+- Communicates with the **MySQL database** to retrieve and store information.
 
-#### **3. Database (MySQL)**
+#### **Database (MySQL)**
 The database is a **MySQL instance** responsible for:
-- Storing property listings.
-- Handling queries related to **creating, reading, updating, and deleting** property records.
-- Sending requested data back to the backend.
+- Storing and retrieving **user credentials**.
+- Managing **property data**.
+- Handling queries related to **creating, reading, updating, and deleting** records.
 
-### Request Flow
+#### **Request Flow**
 
-1. The **user** sends an HTTP request from the **browser** (client) to **port 8080**.
-2. If the request is for a **static file** (HTML, CSS, JavaScript), the backend serves the file directly.
-3. If the request is for a **CRUD operation**, the backend processes it through the **Property Management Service**.
-4. The backend queries or updates the **MySQL database** as needed.
-5. The database sends the requested information back to the backend.
-6. The backend responds to the browser with the processed data.
-7. The browser dynamically updates the UI to reflect the changes.
+1. The **user** sends an **HTTP request** from the **browser** to `frontDomain:80` (Apache Server).
+2. If the request is for a **static file** (HTML, CSS, JavaScript), Apache serves it directly.
+3. If the request requires **backend processing** (e.g., login validation, CRUD operations), Apache forwards it to the **Spring Boot backend**.
+4. The backend:
+   - Processes **authentication requests** via `UserManagement`.
+   - Processes **property-related requests** via `PropertyManagement`.
+   - Queries the **MySQL database** for necessary information.
+5. The **MySQL database** sends the requested data back to the **backend**.
+6. The **backend** processes the data and responds to the **Apache server**.
+7. The **Apache server** sends the response to the **browser**, updating the UI dynamically.
 
-This architecture ensures a structured, efficient, and **scalable** real estate management system.
 
 ## Class Diagram
 ![Class Diagram](images/ClassDiagram.png)
 
 #### Overview
 
-The class diagram represents the **Real Estate CRUD System**, showing its main components, relationships, and responsibilities. The system follows a **Model-View-Controller (MVC)** architecture and is divided into three key layers:
+The class diagram represents the Real Estate CRUD System, showing its main components, relationships, and responsibilities. 
 
-1. **`Model`** - Defines the `Property` entity and its attributes.
+1. **`Model`** - Defines the `User` and `Property` entities.
 2. **`Repository & Service`** - Handles database operations and business logic.
 3. **`Controller`** - Manages HTTP requests and responses.
 
-###### **Model Layer**
-The `Property` class represents a real estate entity with attributes:
+#### **Model Layer**
+This layer contains the domain entities: `User` and `Property`.
+
+#### **User Class**
+Represents an application user with login credentials.
+
+- **Attributes**:
+  - `id: Long` → Unique identifier of the user.
+  - `username: String` → User's login name.
+  - `password: String` → User's password.
+
+- **Methods**:
+  - `getId() : Long` → Returns the user ID.
+  - `getPassword() : String` → Returns the user's password.
+  - `getUsername() : String` → Returns the username.
+  - `setId(id: Long) : void` → Sets the user ID.
+  - `setPassword(password: String) : void` → Updates the password.
+  - `setUsername(username: String) : void` → Updates the username.
+
+#### **Property Class**
+Represents a real estate entity with attributes:
 
 - **Attributes**:
   - `id: Long` → Unique identifier of the property.
@@ -373,19 +480,34 @@ The `Property` class represents a real estate entity with attributes:
   - `setSize(size: String) : void` → Updates the size.
   - `setDescription(description: String) : void` → Updates the description.
 
-This layer ensures **data encapsulation** and provides access to real estate properties.
 
-###### **Repository Layer**
-The `PropertyRepository` interface extends `JpaRepository` to provide database access.
+#### **Repository Layer**
+The repository layer abstracts database persistence using Spring Data JPA.
+
+#### **Repositories**
+- `CrudRepository<Property, Long>` → Handles CRUD operations for `Property`.
+- `JpaRepository<User, Long>` → Handles CRUD operations for `User`.
 
 - **Methods**:
   - `findById(id: Long) : Optional<Property>` → Retrieves a property by its ID.
   - `findAll() : List<Property>` → Fetches all properties.
 
-This layer abstracts **data persistence** and allows interaction with the database.
+This layer ensures database interactions are handled efficiently.
 
-###### **Service Layer**
-The `PropertyService` class implements the business logic for managing properties.
+#### **Service Layer**
+The service layer implements business logic for managing users and properties.
+
+#### **UserService**
+Handles authentication and user management.
+
+- **Methods**:
+  - `findById(id: Long) : Optional<User>` → Retrieves a user by ID.
+  - `save(user: User) : User` → Saves a new user.
+  - `loadUserByUsername(username : String) : UserDetails` → Loads user by username.
+  - `authenticate(username : String, rawPassword : String) : boolean` → Validates user credentials.
+
+#### **PropertyService**
+Implements the logic for managing properties.
 
 - **Methods**:
   - `createProperty(property: Property) : Property` → Saves a new property.
@@ -394,16 +516,27 @@ The `PropertyService` class implements the business logic for managing propertie
   - `deletePropertyById(id: Long) : void` → Deletes a property.
   - `updateProperty(property: Property) : Property` → Updates an existing property.
 
-This layer ensures **data validation, processing, and interaction** with the repository.
+This layer ensures data validation, processing, and interaction with the repository.
 
-###### **Controller Layer**
-The `PropertyController` class handles **HTTP requests** and delegates operations to the service layer.
+
+#### **Controller Layer**
+The controller layer handles **HTTP requests** and interacts with the service layer.
+
+#### **UserController**
+Manages user authentication and registration.
+
+- **Methods**:
+  - `registerUser(user: User) : String` → Registers a new user.
+  - `authenticate(user: User) : ResponseEntity<String>` → Authenticates user credentials.
+
+#### **PropertyController**
+Handles property-related requests.
 
 - **Methods**:
   - `@GetMapping("/{id}")`
     - **Description**: Fetches a property by ID.
     - **Returns**: `ResponseEntity<Property>`.
-  
+
   - `@PostMapping("/create")`
     - **Description**: Creates a new property.
     - **Returns**: `ResponseEntity<Property>` with status `201 CREATED`.
@@ -420,20 +553,21 @@ The `PropertyController` class handles **HTTP requests** and delegates operation
     - **Description**: Updates an existing property.
     - **Returns**: `ResponseEntity<Property>` with `200 OK` or `404 NOT FOUND`.
 
-This layer acts as the **REST API interface**, exposing endpoints for client interactions.
+This layer acts as the REST API interface, exposing endpoints for client interactions.
 
-###### **Relationships and Interactions**
+#### **Relationships and Interactions**
 - **Model → Repository**
-  - The `Property` class is mapped to the database using JPA.
-  
+  - The `User` and `Property` classes are mapped to the database using JPA.
+
 - **Repository → Service**
-  - The `PropertyRepository` is used by `PropertyService` to fetch and manage data.
-  
+  - The `UserRepository` and `PropertyRepository` are used by their respective services to fetch and manage data.
+
 - **Service → Controller**
-  - The `PropertyService` handles business logic before sending data to `PropertyController`.
+  - The `UserService` and `PropertyService` handle business logic before sending data to their controllers.
 
 - **Controller → API**
-  - The `PropertyController` exposes RESTful endpoints for external applications to interact with the system.
+  - The `UserController` and `PropertyController` expose RESTful endpoints for external applications to interact with the system.
+
 
 ## Running the tests
 
@@ -497,7 +631,7 @@ Each of the tests was executed using **JUnit 5** and **Mockito** to mock depende
 
 ## Conclusion
 
-The Real Estate CRUD System provides a well-structured and scalable solution for managing property listings. Built with Spring Boot, it follows a layered architecture ensuring separation of concerns between the controller, service, and repository layers.
+The Real Estate CRUD System provides a well-structured and scalable solution for managing property listings. Built with Spring Boot, it follows a layered architecture ensuring separation of concerns between the controller, service, and repository layers. Ensuring secure communication between the frontend and backend using TLS and HTTPS.
 
 ## Built With
 
@@ -506,6 +640,7 @@ The Real Estate CRUD System provides a well-structured and scalable solution for
 * [Spring-boot](https://spring.io/projects/spring-boot) - Backend framework
 * [MySQL](https://www.mysql.com) - Database
 * [Docker](https://www.docker.com) - Virtualization
+* [DuckDNS](https://duckdns.org) - DNS service
 
 ## Versioning
 
@@ -515,7 +650,7 @@ I use [GitHub](http://github.com) for versioning.
 
 * **Oscar Santiago Lesmes Parra** - [oscar0617](https://github.com/oscar0617)
 
-Date: 03/03/2025
+Date: 11/03/2025
 ## License
 
 This project is licensed under the GNU.
