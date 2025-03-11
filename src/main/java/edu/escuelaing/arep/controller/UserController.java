@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import edu.escuelaing.arep.model.User;
 import edu.escuelaing.arep.service.UserService;
 
-@CrossOrigin(origins = "https://localhost:5000", allowCredentials = "true")
+@CrossOrigin(origins = "https://backendoscar.duckdns.org", allowCredentials = "true")
 @RestController
 @RequestMapping("/users")
 public class UserController {

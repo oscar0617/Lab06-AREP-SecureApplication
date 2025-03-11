@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import edu.escuelaing.arep.model.Property;
 import edu.escuelaing.arep.service.PropertyService;
 
-@CrossOrigin(origins = "https://localhost:5000", allowCredentials = "true")
+@CrossOrigin(origins = "https://backendoscar.duckdns.org", allowCredentials = "true")
 @RestController
 @RequestMapping("/v1/property")
 public class PropertyController {
