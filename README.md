@@ -70,8 +70,13 @@ You need to install the following tools to run the project:
     mvn package
     ```
     Should appear something like this:
-    ```
-    
+    ```     
+    [INFO] ------------------------------------------------------------------------
+    [INFO] BUILD SUCCESS
+    [INFO] ------------------------------------------------------------------------
+    [INFO] Total time:  5.368 s
+    [INFO] Finished at: 2025-03-11T14:25:01-05:00
+    [INFO] ------------------------------------------------------------------------
     ```
 3. Run the container with MySQL
     ```
@@ -83,7 +88,17 @@ You need to install the following tools to run the project:
     ```
     Should appear something like this:
     ```
-    
+        
+      .   ____          _            __ _ _
+    /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+    ( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+    \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+      '  |____| .__|_| |_|_| |_\__, | / / / /
+    =========|_|==============|___/=/_/_/_/
+
+    :: Spring Boot ::                (v3.4.3)
+
+    2025-03-11T14:25:32.517-05:00  INFO 8424 --- [secureapplication] [           main] e.e.arep.SecureapplicationApplication    : Starting SecureapplicationApplication using Java 17.0.10 with PID 8424 (C:\Users\luzma\Desktop\AREP\Lab06-AREP-SecureApplication\target\classes started by luzma in C:\Users\luzma\Desktop\AREP\Lab06-AREP-SecureApplication)
     ```
 After this, you will be able to access into your browser with https://localhost:5000 and try the CRUD System with a data base locally, to do it with a MySQL data base follow the next section to deploy it on AWS. Check this video of the project working locally:
 
